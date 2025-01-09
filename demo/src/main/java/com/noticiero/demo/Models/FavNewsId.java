@@ -1,22 +1,24 @@
 package com.noticiero.demo.Models;
 
 import jakarta.persistence.Embeddable;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
 
 import java.io.Serializable;
 import java.util.Objects;
 
-@AllArgsConstructor
-@NoArgsConstructor
-@Data
 @Embeddable
 public class FavNewsId implements Serializable {
 
     private Long userId;
 
     private Long newsId;
+
+    public FavNewsId(Long userId, Long newsId) {
+        this.userId = userId;
+        this.newsId = newsId;
+    }
+
+    public FavNewsId() {
+    }
 
 
     @Override
@@ -33,4 +35,23 @@ public class FavNewsId implements Serializable {
         return Objects.hash(userId, newsId);
     }
 
+    public Long getUserId() {
+
+        return this.userId;
+    }
+
+    public Long getNewsId() {
+
+        return this.newsId;
+    }
+
+    public void setUserId(Long userId) {
+
+        this.userId = userId;
+    }
+
+    public void setNewsId(Long newsId) {
+
+        this.newsId = newsId;
+    }
 }

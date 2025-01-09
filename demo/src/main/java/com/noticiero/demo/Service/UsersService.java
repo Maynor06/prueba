@@ -4,15 +4,24 @@ import com.noticiero.demo.DTOS.UserRequestDTO;
 import com.noticiero.demo.DTOS.UserResponseDTO;
 import com.noticiero.demo.Models.Users;
 import com.noticiero.demo.Repository.UsersRepository;
+import com.noticiero.demo.Util.JwtUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 @Service
 public class UsersService {
 
-    UsersRepository usersRepository;
+    @Autowired
+    private JwtUtils jwtUtils;
 
-    public UsersService(UsersRepository usersRepository) {
+    private UsersRepository usersRepository;
+
+    private PasswordEncoder passwordEncoder;
+
+    public UsersService(UsersRepository usersRepository, PasswordEncoder passwordEncoder) {
         this.usersRepository = usersRepository;
+        this.passwordEncoder = passwordEncoder;
     }
 
     private UserResponseDTO UserDTOaUser(Users user) {
@@ -24,15 +33,21 @@ public class UsersService {
         return userDTOa;
     }
 
-    public UserResponseDTO createUser(UserRequestDTO userRequestDTO) {
-
+    public String createUser(UserRequestDTO userRequestDTO) {
         Users user = new Users();
         user.setUsername(userRequestDTO.getUsername());
         user.setEmail(userRequestDTO.getEmail());
-        user.setPassword(userRequestDTO.getPassword());
-        //creacion del usuario
-        user = usersRepository.save(user);
+        user.setPassword(passwordEncoder.encode(userRequestDTO.getPassword()));
 
+        usersRepository.save(user);
+
+        String token = jwtUtils.genereteAccesToken(userRequestDTO.getUsername());
+
+        return token;
+    }
+
+    public UserResponseDTO getUserByEmail(String email) {
+        Users user = usersRepository.findByEmail(email).orElseThrow(()->new RuntimeException("User not found"));
         return this.UserDTOaUser(user);
     }
 

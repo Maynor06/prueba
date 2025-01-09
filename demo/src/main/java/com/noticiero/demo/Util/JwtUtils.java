@@ -7,16 +7,18 @@ import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
 import org.springframework.beans.factory.annotation.Value;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.security.Key;
 import java.util.Date;
 import java.util.function.Function;
 
 @Component
-@Slf4j
 public class JwtUtils {
+
+    private static final Logger log = LoggerFactory.getLogger(JwtUtils.class);
 
     @Value("${jwt.secret.key}")
     private String secretKey;
@@ -43,7 +45,7 @@ public class JwtUtils {
                     .getBody();
             return true;
         }catch (Exception e){
-            log.error("Token invalido" + e.getMessage());
+            log.error("Token invalido{}", e.getMessage());
             return false;
         }
     }

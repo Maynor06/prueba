@@ -1,13 +1,7 @@
 package com.noticiero.demo.Models;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
 
-@AllArgsConstructor
-@NoArgsConstructor
-@Data
 @Entity
 @Table(name = "user_Favoritas")
 public class FavNews {
@@ -16,14 +10,46 @@ public class FavNews {
     private FavNewsId Id;
 
     @ManyToOne
-    @MapsId("user_id")
+    @MapsId("userId")
     @JoinColumn(name = "user_id")
     private Users user;
 
     @ManyToOne
-    @MapsId("news_id")
+    @MapsId("newsId")
     @JoinColumn(name = "news_id")
     private News news;
 
+    public FavNews(FavNewsId Id, Users user, News news) {
+        this.Id = Id;
+        this.user = user;
+        this.news = news;
+    }
+
+    public FavNews() {
+    }
+
+    public FavNewsId getId() {
+        return this.Id;
+    }
+
+    public Users getUser() {
+        return this.user;
+    }
+
+    public News getNews() {
+        return this.news;
+    }
+
+    public void setId(FavNewsId Id) {
+        this.Id = Id;
+    }
+
+    public void setUser(Users user) {
+        this.user = user;
+    }
+
+    public void setNews(News news) {
+        this.news = news;
+    }
 }
 

@@ -4,9 +4,11 @@ import com.noticiero.demo.Models.Category;
 import com.noticiero.demo.Models.News;
 import com.noticiero.demo.Models.Users;
 import org.springframework.data.repository.CrudRepository;
+import org.springframework.stereotype.Repository;
 
 import java.util.List;
 
+@Repository
 public interface NewsRepository extends CrudRepository<News, Long> {
 
     List<News> findByTitle(String title);

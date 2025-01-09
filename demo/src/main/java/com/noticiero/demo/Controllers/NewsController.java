@@ -9,7 +9,8 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
-@RestController("/news")
+@RestController
+@RequestMapping("/news")
 public class NewsController {
 
     private NewsService newsService;

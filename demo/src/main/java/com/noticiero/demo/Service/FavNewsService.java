@@ -1,6 +1,7 @@
 package com.noticiero.demo.Service;
 
 import com.noticiero.demo.DTOS.FavNewsDTO;
+import com.noticiero.demo.DTOS.FavNewsDetailDTO;
 import com.noticiero.demo.Models.FavNews;
 import com.noticiero.demo.Models.FavNewsId;
 import com.noticiero.demo.Models.News;
@@ -8,6 +9,8 @@ import com.noticiero.demo.Models.Users;
 import com.noticiero.demo.Repository.FavNewsRepository;
 import com.noticiero.demo.Repository.NewsRepository;
 import com.noticiero.demo.Repository.UsersRepository;
+import jakarta.persistence.EntityNotFoundException;
+import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -28,36 +31,47 @@ public class FavNewsService {
         this.newsRepository = newsRepository;
     }
 
-    public FavNewsDTO addFavNews(FavNewsDTO favNews) {
+    public FavNewsDetailDTO addFavNews(FavNewsDTO favNews) {
+        if (favNews.getUserId() == null || favNews.getNewsId() == null) {
+            throw new IllegalArgumentException("UserId and NewsId cannot be null");
+        }
+
         Users user = usersRepository.findById(favNews.getUserId()).orElseThrow(() -> new RuntimeException("User not found") );
         News news = newsRepository.findById(favNews.getNewsId()).orElseThrow(() -> new RuntimeException("News not found") );
 
-        FavNewsId favNewsId = new FavNewsId(favNews.getUserId(), favNews.getNewsId());
+        FavNewsId favNewsId = new FavNewsId(user.getId(), news.getId());
         FavNews favNews1 = new FavNews();
+        favNews1.setId(favNewsId);
         favNews1.setUser(user);
         favNews1.setNews(news);
 
         favNewsRepository.save(favNews1);
-        return favNews;
+         return new FavNewsDetailDTO(
+                favNews.getUserId(),
+                favNews.getNewsId(),
+                user.getUsername(),
+                news.getTitle(),
+                news.getContent()
+        );
     }
 
-    public String removeFavNew(FavNewsDTO favNews) {
-        FavNewsId favNewsId = new FavNewsId(favNews.getUserId(), favNews.getNewsId());
+    @Transactional
+    public void deleteFavNews(Long userId, Long newsId) {
+        FavNewsId favNewsId = new FavNewsId(userId, newsId);
 
-        if (!favNewsRepository.existsById(favNewsId) ) {
-            throw new IllegalArgumentException("La noticia favorita no existe");
+        if (favNewsRepository.existsById(favNewsId)) {
+            favNewsRepository.deleteById(favNewsId);
+        } else {
+            throw new EntityNotFoundException("No se encontró la noticia favorita para el usuario ID "
+                    + userId + " y noticia ID " + newsId);
         }
-
-        if (favNewsRepository.deleteById(favNewsId)){
-            return "Se elimino con exito!!";
-        }
-
-        return "";
     }
+
 
     public List<FavNewsDTO> getAllFavByUserId(Long userId) {
         List<FavNews> favNewsList = favNewsRepository.findAllByUserId(userId);
         List<FavNewsDTO> favNewsDTOList = new ArrayList<>();
+
         favNewsList.forEach(favNews -> {
             FavNewsDTO favNewsDTO = new FavNewsDTO();
             favNewsDTO.setUserId(favNews.getId().getUserId());

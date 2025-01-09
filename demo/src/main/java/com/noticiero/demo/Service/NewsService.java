@@ -26,36 +26,37 @@ public class NewsService {
         this.categoryRepository = categoryRepository;
     }
 
-    public NewsDTOResponse addNews(NewsDTORequest newsDTORequest) {
-        Users user = usersRepository.findById(newsDTORequest.getUserId()).orElseThrow(() -> new RuntimeException("User Not Found") );
-        Category category = categoryRepository.findById(newsDTORequest.getCategoryId()).orElseThrow(() -> new RuntimeException("Category Not Found") );
-
-        News news = new News(newsDTORequest.getTitulo(), newsDTORequest.getImageUrl(), newsDTORequest.getContent(), user, category);
-        newsRepository.save(news);
+    private NewsDTOResponse ModelToDTO(News news) {
         NewsDTOResponse newsDTOResponse = new NewsDTOResponse();
         newsDTOResponse.setId(news.getId());
         newsDTOResponse.setTitulo(news.getTitle());
         newsDTOResponse.setImageUrl(news.getImageUrl());
         newsDTOResponse.setContent(news.getContent());
-        newsDTOResponse.setUserId(user.getId());
-        newsDTOResponse.setCategoryId(category.getId());
+        newsDTOResponse.setUserId(news.getUser().getId());
+        newsDTOResponse.setCategoryId(news.getCategory().getId());
         return newsDTOResponse;
     }
 
+    public NewsDTOResponse addNews(NewsDTORequest newsDTORequest) {
+        Users user = usersRepository.findById(newsDTORequest.getUserId()).orElseThrow(() -> new RuntimeException("User Not Found") );
+        Category category = categoryRepository.findById(newsDTORequest.getCategoryId()).orElseThrow(() -> new RuntimeException("Category Not Found") );
+
+        News news = new News(newsDTORequest.getTitulo(), newsDTORequest.getImageUrl(), newsDTORequest.getContent(), user, category);
+        news = newsRepository.save(news);
+
+        return ModelToDTO(news);
+    }
+
     public NewsDTOResponse updateNews(Long id, NewsDTORequest newsDTORequest) {
-        NewsDTOResponse newsDTOResponse = new NewsDTOResponse();
+
         News news = newsRepository.getNewsById(id);
         news.setTitle(newsDTORequest.getTitulo());
         news.setImageUrl(newsDTORequest.getImageUrl());
         news.setContent(newsDTORequest.getContent());
         newsRepository.save(news);
 
-        newsDTOResponse.setTitulo(news.getTitle());
-        newsDTOResponse.setImageUrl(news.getImageUrl());
-        newsDTOResponse.setContent(news.getContent());
-        newsDTOResponse.setUserId(id);
-        newsDTOResponse.setCategoryId(news.getCategory().getId());
-        return newsDTOResponse;
+
+        return ModelToDTO(news);
     }
 
     public void deleteNews(Long id) {
@@ -64,6 +65,10 @@ public class NewsService {
 
     public List<NewsDTOResponse> getNewsByUserId(Long userId) {
         List<News> newsList = newsRepository.findByUser_id(userId);
+        return getNewsDTOResponses(newsList);
+    }
+
+    private List<NewsDTOResponse> getNewsDTOResponses(List<News> newsList) {
         List<NewsDTOResponse> newsDTOResponseList = new ArrayList<>();
 
         for (News news : newsList) {
@@ -79,16 +84,7 @@ public class NewsService {
 
     public List<NewsDTOResponse> getNewsByCategoryId(Long categoryId) {
         List<News> newsList = newsRepository.findByCategory_id(categoryId);
-        List<NewsDTOResponse> newsDTOResponseList = new ArrayList<>();
-        for (News news : newsList) {
-            NewsDTOResponse newsDTOResponse = new NewsDTOResponse();
-            newsDTOResponse.setId(news.getId());
-            newsDTOResponse.setTitulo(news.getTitle());
-            newsDTOResponse.setImageUrl(news.getImageUrl());
-            newsDTOResponse.setContent(news.getContent());
-            newsDTOResponseList.add(newsDTOResponse);
-        }
-        return newsDTOResponseList;
+        return getNewsDTOResponses(newsList);
     }
 
 
